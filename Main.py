@@ -10,30 +10,44 @@ capture = pyshark.LiveCapture(interface=wifi_interface)
 
 
 def print_info(packet):
-    if packet["WLAN"] and packet["WLAN_RADIO"]:
-
+    try:
+        if not packet["WLAN.MGT"]:
+            return
+        if not packet["WLAN"]:
+            return
+        if not packet["WLAN_RADIO"]:
+            return
         if packet["WLAN"].fc_type_subtype == "0x0004":
             if packet["WLAN"].ta:
+                # print(packet)
                 # print(packet["WLAN"])
                 # print(packet["WLAN"].field_names)
+
                 print()
 
+                print("SignalS:", packet["WLAN_RADIO"].signal_dbm)
+
+                print("SSID:", packet["WLAN.MGT"].wlan_ssid)
                 # print(packet["WLAN"].fc_type_subtype)
 
                 print("Source:", packet["WLAN"].ta)
-                if packet["WLAN"].ta == "a8:ba:69:04:9C:92":
-                    print("Sui")
-
                 print("Freq:", packet["WLAN_RADIO"].frequency)
                 print()
+    except:
+        pass
 
 
 # capture.sniff_continuously(packet_count=
 
 # capture.sniff(packet_count=3)
+channel = 14
 
+out_str = f'airmon-ng start "{wifi_interface}" {channel} >/dev/null 2>&1'
+os.system("echo %s|sudo -S %s" % ("@hoothoot", out_str))
+capture.apply_on_packets(print_info, packet_count=100)
 channel = 1
 iterations = 0
+"""
 while iterations < 100:
     if channel > 14:
         channel = 1
@@ -46,3 +60,4 @@ while iterations < 100:
         if type(ex) != TimeoutError:
             break
     channel += 1
+"""
