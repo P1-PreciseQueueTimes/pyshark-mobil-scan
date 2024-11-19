@@ -1,4 +1,5 @@
 import os
+import time
 
 import pyshark
 
@@ -6,10 +7,21 @@ print()
 print("Capturing")
 print()
 wifi_interface = "wlp5s0f4u2"
+old_source = ""
+old_time = time.time()
+pi_source = "dc:a6:32:54:ac:c5"
 capture = pyshark.LiveCapture(interface=wifi_interface)
 
 
 def print_info(packet):
+    global old_source
+    global old_time
+    """
+    if packet["WLAN"].fc_type_subtype == "0x0004":
+        if packet["WLAN"].ta:
+            print("Source:", packet["WLAN"].ta)
+            print()
+    """
     try:
         if not packet["WLAN.MGT"]:
             return
@@ -19,34 +31,38 @@ def print_info(packet):
             return
         if packet["WLAN"].fc_type_subtype == "0x0004":
             if packet["WLAN"].ta:
-                # print(packet)
-                # print(packet["WLAN"])
-                # print(packet["WLAN"].field_names)
-
+                if old_source == packet["WLAN"].ta:
+                    return
+                if packet["WLAN"].ta == pi_source:
+                    current_time = time.time()
+                    now_time = current_time - old_time
+                    print("Pi")
+                    print(now_time)
+                    print()
+                    old_time = current_time
+                """
                 print()
-
                 print("SignalS:", packet["WLAN_RADIO"].signal_dbm)
-
                 print("SSID:", packet["WLAN.MGT"].wlan_ssid)
-                # print(packet["WLAN"].fc_type_subtype)
-
                 print("Source:", packet["WLAN"].ta)
                 print("Freq:", packet["WLAN_RADIO"].frequency)
                 print()
+                """
+
+                old_source = packet["WLAN"].ta
     except:
         pass
 
 
-# capture.sniff_continuously(packet_count=
-
-# capture.sniff(packet_count=3)
-channel = 14
+channel = 13
 
 out_str = f'airmon-ng start "{wifi_interface}" {channel} >/dev/null 2>&1'
 os.system("echo %s|sudo -S %s" % ("@hoothoot", out_str))
 capture.apply_on_packets(print_info, packet_count=100)
 channel = 1
 iterations = 0
+
+# Hvis man vil sniffe efter flere kanaler
 """
 while iterations < 100:
     if channel > 14:
