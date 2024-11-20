@@ -24,13 +24,12 @@ def print_info(packet):
             if packet["WLAN"].ta == pi_source:
                 current_time = time.time()
                 now_time = current_time - old_time
-                print("Pi")
-                print(now_time)
-                print()
+                print(f"Pi\n{now_time}\n")
                 old_time = current_time
             old_source = packet["WLAN"].ta
     except Exception as e:
         print(f"Error processing packet: {e}")
+        
         """
         print()
         print("SignalS:", packet["WLAN_RADIO"].signal_dbm)
