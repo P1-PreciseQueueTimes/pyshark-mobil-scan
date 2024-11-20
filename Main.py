@@ -3,9 +3,9 @@ import time
 
 import pyshark
 
-print()
-print("Capturing")
-print()
+
+print("\nCapturing\n")
+
 wifi_interface = "wlp5s0f4u2"
 old_source = ""
 old_time = time.time()
@@ -14,45 +14,32 @@ capture = pyshark.LiveCapture(interface=wifi_interface)
 
 
 def print_info(packet):
-    global old_source
-    global old_time
-    """
-    if packet["WLAN"].fc_type_subtype == "0x0004":
-        if packet["WLAN"].ta:
-            print("Source:", packet["WLAN"].ta)
-            print()
-    """
+    global old_source, old_time
     try:
-        if not packet["WLAN.MGT"]:
+        if not packet["WLAN.MGT"] or not packet["WLAN"] or not packet["WLAN_RADIO"]:
             return
-        if not packet["WLAN"]:
-            return
-        if not packet["WLAN_RADIO"]:
-            return
-        if packet["WLAN"].fc_type_subtype == "0x0004":
-            if packet["WLAN"].ta:
-                if old_source == packet["WLAN"].ta:
-                    return
-                if packet["WLAN"].ta == pi_source:
-                    current_time = time.time()
-                    now_time = current_time - old_time
-                    print("Pi")
-                    print(now_time)
-                    print()
-                    old_time = current_time
-                """
-                print()
-                print("SignalS:", packet["WLAN_RADIO"].signal_dbm)
-                print("SSID:", packet["WLAN.MGT"].wlan_ssid)
-                print("Source:", packet["WLAN"].ta)
-                print("Freq:", packet["WLAN_RADIO"].frequency)
-                print()
-                """
 
-                old_source = packet["WLAN"].ta
-    except:
-        pass
-
+        if packet["WLAN"].fc_type_subtype == "0x0004" and packet["WLAN"].ta:
+            if old_source == packet["WLAN"].ta:
+                return
+            if packet["WLAN"].ta == pi_source:
+                current_time = time.time()
+                now_time = current_time - old_time
+                print("Pi")
+                print(now_time)
+                print()
+                old_time = current_time
+            old_source = packet["WLAN"].ta
+    except Exception as e:
+        print(f"Error processing packet: {e}")
+        """
+        print()
+        print("SignalS:", packet["WLAN_RADIO"].signal_dbm)
+        print("SSID:", packet["WLAN.MGT"].wlan_ssid)
+        print("Source:", packet["WLAN"].ta)
+        print("Freq:", packet["WLAN_RADIO"].frequency)
+        print()
+        """
 
 channel = 13
 
